@@ -1,66 +1,6 @@
-SET @productos_json = JSON_ARRAY(
-    JSON_OBJECT('producto_id', 1, 'cantidad', 1),  -- 1 Smartphone
-    JSON_OBJECT('producto_id', 3, 'cantidad', 2),  -- 2 Audífonos
-    JSON_OBJECT('producto_id', 8, 'cantidad', 1)   -- 1 Sartén
-);
-
-CALL sp_registrar_nueva_orden(
-    1,                        -- cliente_id
-    2,                        -- empleado_id (Patricia)
-    1,                        -- sucursal_id (Roma)
-    6,                        -- direccion_envio_id
-    @productos_json           -- productos en formato JSON
-);
+ocupo un inicio de sesión, haslo en archivo php pero no uses php, pero déjalo listo para implementar con php, quiero un inicio de sesión en el index, además quiero que guardes en el localstorage con js una forma que por ejemplo si estoy en cualquiero otra pagina que si no estoy iniciado sesión que no me deje entrar y me mande a iniciar sesión, te pasare 2 formas de inicar sesión, cliente o admin, si eres cliente lo diriges a una pagina y si es admin a otra, además en el localstorage eso del usuario que haya una propiedad que los diferencie, además quiero logout y eso, y un crear usuario, por cierto eso de iniciar sesion cuando que cuando incie cambie el usuario de la conexión a la db, te pasare la tabla clientes para que te des una idea, , pero con admin nomas pon nombre y contraseña, no se ocupa tabla: 
 
 
-CREATE PROCEDURE sp_registrar_nueva_orden(
-    IN p_cliente_id INT,
-    IN p_empleado_id INT,
-    IN p_sucursal_id INT,
-    IN p_direccion_envio_id INT,
-    IN p_productos_json JSON -- Formato: [{"producto_id": 1, "cantidad": 2}, {"producto_id": 3, "cantidad": 1}]
-)
-BEGIN
-    DECLARE v_orden_id INT;
-    DECLARE v_producto_id INT;
-    DECLARE v_cantidad INT;
-    DECLARE v_precio_unitario DECIMAL(10,2);
-    DECLARE i INT DEFAULT 0;
-    DECLARE num_productos INT;
 
-    -- Iniciar transacción para asegurar la consistencia
-    START TRANSACTION;
 
-    -- Insertar la orden de compra
-    INSERT INTO ordenes_compra (cliente_id, empleado_id, sucursal_id, direccion_envio_id, estado)
-    VALUES (p_cliente_id, p_empleado_id, p_sucursal_id, p_direccion_envio_id, 'pendiente');
-
-    SET v_orden_id = LAST_INSERT_ID();
-
-    -- Obtener el número de productos en el JSON
-    SET num_productos = JSON_LENGTH(p_productos_json);
-
-    -- Recorrer los productos y agregarlos a los detalles de la orden
-    WHILE i < num_productos DO
-    SET v_producto_id = CAST(JSON_UNQUOTE(JSON_EXTRACT(p_productos_json, CONCAT('$[', i, '].producto_id'))) AS UNSIGNED);
-    SET v_cantidad = CAST(JSON_UNQUOTE(JSON_EXTRACT(p_productos_json, CONCAT('$[', i, '].cantidad'))) AS UNSIGNED);
-
-    -- Obtener el precio unitario actual del producto
-    SELECT precio INTO v_precio_unitario FROM productos WHERE producto_id = v_producto_id;
-
-    -- Verificar que haya suficiente stock
-    IF (SELECT stock FROM productos WHERE producto_id = v_producto_id) >= v_cantidad THEN
-        INSERT INTO ordenes_detalle (orden_id, producto_id, cantidad, precio_unitario)
-        VALUES (v_orden_id, v_producto_id, v_cantidad, v_precio_unitario);
-    ELSE
-        ROLLBACK;
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Stock insuficiente para uno de los productos.';
-    END IF;
-
-    SET i = i + 1;
-END WHILE;
-
-    -- Confirmar la transacción
-    COMMIT;
-
-END //
+ocupo un inicio de sesion, en este caso me gustaria que en el index este este inicio, habran 2 formas, inicio de sesion como cliente, donde tambien solo haya un formulario para solo crear usuario, y tambien estara admin que como no tengo admin pues el usuario es admin y contraseña 12345678, una vez que entre, quiero que en el localstorage pongas algo pero de tal forma que en cualquier pagina checar el localstorage y si no estoy iniciado sesion que me mande al index, y que detecte si soy admin o no, porque tendre rutas solo de admin, asi que genera solo el codigo js que hace eso oara yo integrarlo en mis paginas, y por ultimo, quiero que crees unas paginas para cliente, que solo me permita hacer la compra de los productos y con eso, y en admin pues que me dirija a otra pagina
