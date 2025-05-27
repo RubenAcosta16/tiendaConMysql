@@ -31,6 +31,11 @@
                 <br>
                 <br>
                 <li><a href="reseñas.php">Administrar Reseñas</a></li>
+
+                <br>
+                <br>
+                <li><a href="ordenes_compra.php">Administrar Órdenes de Compra</a></li> 
+                <li><a href="pagos.php">Administrar Pagos</a></li>      
             </ul>
             </ul>
         </nav>
