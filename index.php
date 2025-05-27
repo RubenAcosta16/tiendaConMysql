@@ -10,7 +10,7 @@
     <div class="container">
         <h1>Bienvenido al Administrador de Sucursales y Direcciones</h1>
         <nav>
-            <ul>
+        
                 <li><a href="sucursales.php">Ver y Administrar Sucursales</a></li>
                 <li><a href="direcciones.php">Ver y Administrar Direcciones</a></li>
                 <li><a href="proveedores.php">Ver y Administrar Proveedores</a></li> 
@@ -19,7 +19,18 @@
                 <li><a href="datos_personas.php">Administrar Datos de Personas</a></li>
 
                 <li><a href="puesto.php">Administrar Puestos</a></li>         
-                <li><a href="empleados.php">Administrar Empleados</a></li>   
+                <li><a href="empleados.php">Administrar Empleados</a></li> 
+                
+                <br>
+                <br>
+                
+                <li><a href="categorias.php">Administrar Categorías</a></li>    
+                <li><a href="proveedores.php">Administrar Proveedores</a></li>  
+                <li><a href="productos.php">Administrar Productos</a></li>      
+
+                <br>
+                <br>
+                <li><a href="reseñas.php">Administrar Reseñas</a></li>
             </ul>
             </ul>
         </nav>
