@@ -1,0 +1,66 @@
+SET @productos_json = JSON_ARRAY(
+    JSON_OBJECT('producto_id', 1, 'cantidad', 1),  -- 1 Smartphone
+    JSON_OBJECT('producto_id', 3, 'cantidad', 2),  -- 2 Audífonos
+    JSON_OBJECT('producto_id', 8, 'cantidad', 1)   -- 1 Sartén
+);
+
+CALL sp_registrar_nueva_orden(
+    1,                        -- cliente_id
+    2,                        -- empleado_id (Patricia)
+    1,                        -- sucursal_id (Roma)
+    6,                        -- direccion_envio_id
+    @productos_json           -- productos en formato JSON
+);
+
+
+CREATE PROCEDURE sp_registrar_nueva_orden(
+    IN p_cliente_id INT,
+    IN p_empleado_id INT,
+    IN p_sucursal_id INT,
+    IN p_direccion_envio_id INT,
+    IN p_productos_json JSON -- Formato: [{"producto_id": 1, "cantidad": 2}, {"producto_id": 3, "cantidad": 1}]
+)
+BEGIN
+    DECLARE v_orden_id INT;
+    DECLARE v_producto_id INT;
+    DECLARE v_cantidad INT;
+    DECLARE v_precio_unitario DECIMAL(10,2);
+    DECLARE i INT DEFAULT 0;
+    DECLARE num_productos INT;
+
+    -- Iniciar transacción para asegurar la consistencia
+    START TRANSACTION;
+
+    -- Insertar la orden de compra
+    INSERT INTO ordenes_compra (cliente_id, empleado_id, sucursal_id, direccion_envio_id, estado)
+    VALUES (p_cliente_id, p_empleado_id, p_sucursal_id, p_direccion_envio_id, 'pendiente');
+
+    SET v_orden_id = LAST_INSERT_ID();
+
+    -- Obtener el número de productos en el JSON
+    SET num_productos = JSON_LENGTH(p_productos_json);
+
+    -- Recorrer los productos y agregarlos a los detalles de la orden
+    WHILE i < num_productos DO
+    SET v_producto_id = CAST(JSON_UNQUOTE(JSON_EXTRACT(p_productos_json, CONCAT('$[', i, '].producto_id'))) AS UNSIGNED);
+    SET v_cantidad = CAST(JSON_UNQUOTE(JSON_EXTRACT(p_productos_json, CONCAT('$[', i, '].cantidad'))) AS UNSIGNED);
+
+    -- Obtener el precio unitario actual del producto
+    SELECT precio INTO v_precio_unitario FROM productos WHERE producto_id = v_producto_id;
+
+    -- Verificar que haya suficiente stock
+    IF (SELECT stock FROM productos WHERE producto_id = v_producto_id) >= v_cantidad THEN
+        INSERT INTO ordenes_detalle (orden_id, producto_id, cantidad, precio_unitario)
+        VALUES (v_orden_id, v_producto_id, v_cantidad, v_precio_unitario);
+    ELSE
+        ROLLBACK;
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Stock insuficiente para uno de los productos.';
+    END IF;
+
+    SET i = i + 1;
+END WHILE;
+
+    -- Confirmar la transacción
+    COMMIT;
+
+END //

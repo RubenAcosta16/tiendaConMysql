@@ -26,22 +26,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         $stmt->close();
     } elseif (isset($_POST['update_pago'])) {
-        $pago_id = $_POST['pago_id'];
-        $orden_id = $_POST['orden_id'];
-        $metodo_pago = $_POST['metodo_pago'];
-        $monto = $_POST['monto'];
-        $estado = $_POST['estado'];
-        $referencia_pago = $_POST['referencia_pago'];
+    $pago_id = $_POST['pago_id'];
+    $orden_id = $_POST['orden_id'];
+    $metodo_pago = $_POST['metodo_pago'];
+    $monto = $_POST['monto'];
+    $estado = $_POST['estado'];
+    $referencia_pago = $_POST['referencia_pago'];
 
-        $stmt = $conn->prepare("UPDATE pagos SET orden_id = ?, metodo_pago = ?, monto = ?, estado = ?, referencia_pago = ? WHERE pago_id = ?");
-        $stmt->bind_param("isdsi", $orden_id, $metodo_pago, $monto, $estado, $referencia_pago, $pago_id);
-        if ($stmt->execute()) {
-            $message = "<p class='success'>Pago actualizado exitosamente.</p>";
-        } else {
-            $message = "<p class='error'>Error al actualizar pago: " . $stmt->error . "</p>";
-        }
-        $stmt->close();
+    // PREPARA LA SENTENCIA ANTES DEL BIND
+    $stmt = $conn->prepare("UPDATE pagos SET orden_id = ?, metodo_pago = ?, monto = ?, estado = ?, referencia_pago = ? WHERE pago_id = ?");
+    $stmt->bind_param("isdssi", $orden_id, $metodo_pago, $monto, $estado, $referencia_pago, $pago_id);
+    if ($stmt->execute()) {
+        $message = "<p class='success'>Pago actualizado exitosamente.</p>";
+    } else {
+        $message = "<p class='error'>Error al actualizar pago: " . $stmt->error . "</p>";
     }
+    $stmt->close();
+}
 }
 
 // Eliminar Pago

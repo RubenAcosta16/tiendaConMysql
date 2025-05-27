@@ -8,33 +8,51 @@ $message = '';
 
 // --- Lógica para Crear/Actualizar Orden (usando SP) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['add_orden'])) {
-        $cliente_id = $_POST['cliente_id'];
-        $empleado_id = $_POST['empleado_id'] ?: NULL; // NULL si está vacío
-        $sucursal_id = $_POST['sucursal_id'] ?: NULL; // NULL si está vacío
-        $direccion_envio_id = $_POST['direccion_envio_id'] ?: NULL; // NULL si está vacío
-        $productos_json = json_encode($_POST['productos_seleccionados']); // Array de {producto_id, cantidad}
-
-        try {
-            $stmt = $conn->prepare("CALL sp_registrar_nueva_orden(?, ?, ?, ?, ?)");
-            $stmt->bind_param("iiiss", $cliente_id, $empleado_id, $sucursal_id, $direccion_envio_id, $productos_json);
-            if ($stmt->execute()) {
-                $result_sp = $stmt->get_result();
-                $row_sp = $result_sp->fetch_assoc();
-                $new_orden_id = $row_sp['new_orden_id'];
-                $total_calculated = $row_sp['total_calculated'];
-                $message = "<p class='success'>Orden #{$new_orden_id} creada exitosamente con total: $" . number_format($total_calculated, 2) . "</p>";
-                // Limpiar los resultados del SP antes de ejecutar otra query
-                while($conn->more_results() && $conn->next_result()){}
-            } else {
-                throw new Exception("Error al ejecutar sp_registrar_nueva_orden: " . $stmt->error);
-            }
-        } catch (Exception $e) {
-            $message = "<p class='error'>Error: " . $e->getMessage() . "</p>";
-        } finally {
-            if (isset($stmt)) $stmt->close();
+if (isset($_POST['add_orden'])) {
+    $cliente_id = $_POST['cliente_id'];
+    $empleado_id = $_POST['empleado_id'] ?: NULL;
+    $sucursal_id = $_POST['sucursal_id'] ?: NULL;
+    $direccion_envio_id = $_POST['direccion_envio_id'] ?: NULL;
+    
+    // MEJORAR: Asegurar que los valores sean enteros
+    $productos_array = [];
+    foreach ($_POST['productos'] as $producto) {
+        if (!empty($producto['producto_id']) && !empty($producto['cantidad'])) {
+            $productos_array[] = [
+                'producto_id' => (int)$producto['producto_id'], // Convertir explícitamente a entero
+                'cantidad' => (int)$producto['cantidad']        // Convertir explícitamente a entero
+            ];
         }
-    } elseif (isset($_POST['update_estado_orden'])) {
+    }
+    
+    $productos_json = json_encode($productos_array);
+    
+    // DEBUG: Agregar este echo temporal para ver qué se está enviando
+    // echo "JSON enviado: " . $productos_json . "<br>";
+    
+    try {
+        $stmt = $conn->prepare("CALL sp_registrar_nueva_orden(?, ?, ?, ?, ?)");
+        $stmt->bind_param("iiiss", $cliente_id, $empleado_id, $sucursal_id, $direccion_envio_id, $productos_json);
+        if ($stmt->execute()) {
+    $result_sp = $stmt->get_result();
+    if ($result_sp && $row_sp = $result_sp->fetch_assoc()) {
+        $new_orden_id = $row_sp['new_orden_id'];
+        $total_calculated = $row_sp['total_calculated'];
+        $message = "<p class='success'>Orden #{$new_orden_id} creada exitosamente con total: $" . number_format($total_calculated, 2) . "</p>";
+    } else {
+        $message = "<p class='success'>Orden creada exitosamente.</p>";
+    }
+    while($conn->more_results() && $conn->next_result()){}
+} else {
+    throw new Exception("Error al ejecutar sp_registrar_nueva_orden: " . $stmt->error);
+}
+    } catch (Exception $e) {
+        $message = "<p class='error'>Error: " . $e->getMessage() . "</p>";
+    } finally {
+        if (isset($stmt)) $stmt->close();
+    }
+}
+    elseif (isset($_POST['update_estado_orden'])) {
         $orden_id = $_POST['orden_id'];
         $nuevo_estado = $_POST['estado'];
         $metodo_pago = $_POST['metodo_pago'] ?: NULL;
@@ -129,6 +147,21 @@ $clientes = [];
 while ($row = $clientes_result->fetch_assoc()) { $clientes[] = $row; }
 
 
+$empleados_result = $conn->query("
+    SELECT e.empleado_id, dp.nombre, dp.apellido_paterno, dp.apellido_materno
+    FROM empleados e
+    JOIN datos_personas dp ON e.datos_personas_id = dp.datos_personas_id
+    ORDER BY dp.nombre
+");
+$empleados = [];
+if ($empleados_result && $empleados_result->num_rows > 0) {
+    while ($row = $empleados_result->fetch_assoc()) {
+        $row['nombre_completo'] = $row['nombre'] . ' ' . $row['apellido_paterno'] . ' ' . $row['apellido_materno'];
+        $empleados[] = $row;
+    }
+}
+
+
 
 $sucursales_result = $conn->query("SELECT sucursal_id, nombre FROM sucursales ORDER BY nombre");
 $sucursales = [];
@@ -200,44 +233,48 @@ if (!$ordenes_result) {
         <h2>Crear Nueva Orden de Compra</h2>
         <form action="ordenes_compra.php" method="POST">
             <label for="cliente_id">Cliente:</label>
-            <select id="cliente_id" name="cliente_id" required>
-                <option value="">Selecciona un cliente</option>
-                <?php foreach ($clientes as $cliente): ?>
-                    <option value="<?php echo $cliente['cliente_id']; ?>">
-                        <?php echo htmlspecialchars($cliente['nombre'] . ' ' . $cliente['apellido_paterno']); ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
+    <select id="cliente_id" name="cliente_id" required>
+        <option value="">Selecciona un cliente</option>
+        <?php foreach ($clientes as $cliente): ?>
+            <option value="<?php echo $cliente['cliente_id']; ?>"
+                <?php if (isset($_POST['cliente_id']) && $_POST['cliente_id'] == $cliente['cliente_id']) echo 'selected'; ?>>
+                <?php echo htmlspecialchars($cliente['nombre'] . ' ' . $cliente['apellido_paterno']); ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
 
-            <label for="empleado_id">Empleado (Opcional):</label>
-            <select id="empleado_id" name="empleado_id">
-                <option value="">-- Ninguno --</option>
-                <?php foreach ($empleados as $empleado): ?>
-                    <option value="<?php echo $empleado['empleado_id']; ?>">
-                        <?php echo htmlspecialchars($empleado['nombre_completo']); ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
+    <label for="empleado_id">Empleado (Opcional):</label>
+    <select id="empleado_id" name="empleado_id">
+        <option value="">-- Ninguno --</option>
+        <?php foreach ($empleados as $empleado): ?>
+            <option value="<?php echo $empleado['empleado_id']; ?>"
+                <?php if (isset($_POST['empleado_id']) && $_POST['empleado_id'] == $empleado['empleado_id']) echo 'selected'; ?>>
+                <?php echo htmlspecialchars($empleado['nombre_completo']); ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
 
-            <label for="sucursal_id">Sucursal (Opcional):</label>
-            <select id="sucursal_id" name="sucursal_id">
-                <option value="">-- Ninguna --</option>
-                <?php foreach ($sucursales as $sucursal): ?>
-                    <option value="<?php echo $sucursal['sucursal_id']; ?>">
-                        <?php echo htmlspecialchars($sucursal['nombre']); ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
+    <label for="sucursal_id">Sucursal (Opcional):</label>
+    <select id="sucursal_id" name="sucursal_id">
+        <option value="">-- Ninguna --</option>
+        <?php foreach ($sucursales as $sucursal): ?>
+            <option value="<?php echo $sucursal['sucursal_id']; ?>"
+                <?php if (isset($_POST['sucursal_id']) && $_POST['sucursal_id'] == $sucursal['sucursal_id']) echo 'selected'; ?>>
+                <?php echo htmlspecialchars($sucursal['nombre']); ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
 
-            <label for="direccion_envio_id">Dirección de Envío (Opcional):</label>
-            <select id="direccion_envio_id" name="direccion_envio_id">
-                <option value="">-- Ninguna --</option>
-                <?php foreach ($direcciones as $direccion): ?>
-                    <option value="<?php echo $direccion['direccion_id']; ?>">
-                        <?php echo htmlspecialchars($direccion['calle'] . ' ' . $direccion['numero_exterior'] . ', ' . $direccion['ciudad']); ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
+    <label for="direccion_envio_id">Dirección de Envío (Opcional):</label>
+    <select id="direccion_envio_id" name="direccion_envio_id">
+        <option value="">-- Ninguna --</option>
+        <?php foreach ($direcciones as $direccion): ?>
+            <option value="<?php echo $direccion['direccion_id']; ?>"
+                <?php if (isset($_POST['direccion_envio_id']) && $_POST['direccion_envio_id'] == $direccion['direccion_id']) echo 'selected'; ?>>
+                <?php echo htmlspecialchars($direccion['calle'] . ' ' . $direccion['numero_exterior'] . ', ' . $direccion['ciudad']); ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
             <p><small>Asegúrate de que Clientes, Empleados, Sucursales y Direcciones existen antes de crear una orden.</small></p>
 
             <fieldset>
