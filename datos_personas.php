@@ -23,6 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("ssssss", $nombre, $apellido_paterno, $apellido_materno, $email, $fecha_nacimiento, $telefono);
         if ($stmt->execute()) {
             $message = "<p class='success'>Datos de persona agregados exitosamente.</p>";
+            header("Location: datos_personas.php");
+            exit();
         } else {
             if ($conn->errno == 1062) { // Error de duplicado de email
                 $message = "<p class='error'>Error al agregar datos de persona: El email ya existe.</p>";
@@ -109,7 +111,7 @@ $result = $conn->query($sql);
 <body>
     <div class="container">
         <h1>Administrar Datos de Personas</h1>
-        <p><a href="index.php">Volver al Inicio</a></p>
+        <p><a href="dashboard_admin.php">Volver al Inicio</a></p>
 
         <?php echo $message; ?>
 

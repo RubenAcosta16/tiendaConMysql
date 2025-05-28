@@ -44,6 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $conn->commit();
             $message = "<p class='success'>Producto agregado exitosamente.</p>";
+            header("Location: productos.php");
+            exit();
         } catch (Exception $e) {
             $conn->rollback();
             if ($conn->errno == 1062) { // Error de SKU duplicado
@@ -185,7 +187,7 @@ $result = $conn->query($sql);
 <body>
     <div class="container">
         <h1>Administrar Productos</h1>
-        <p><a href="index.php">Volver al Inicio</a></p>
+        <p><a href="dashboard_admin.php">Volver al Inicio</a></p>
 
         <?php echo $message; ?>
 

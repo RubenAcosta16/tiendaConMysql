@@ -22,6 +22,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("isdss", $orden_id, $metodo_pago, $monto, $estado, $referencia_pago);
         if ($stmt->execute()) {
             $message = "<p class='success'>Pago agregado exitosamente.</p>";
+            header("Location: pagos.php");
+            exit();
         } else {
             $message = "<p class='error'>Error al agregar pago: " . $stmt->error . "</p>";
         }
@@ -103,7 +105,7 @@ $result = $conn->query($sql_pagos);
 <body>
     <div class="container">
         <h1>Administrar Pagos</h1>
-        <p><a href="index.php">Volver al Inicio</a></p>
+        <p><a href="dashboard_admin.php">Volver al Inicio</a></p>
 
         <?php echo $message; ?>
 

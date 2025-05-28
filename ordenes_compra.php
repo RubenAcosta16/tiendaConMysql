@@ -40,9 +40,14 @@ if (isset($_POST['add_orden'])) {
         $new_orden_id = $row_sp['new_orden_id'];
         $total_calculated = $row_sp['total_calculated'];
         $message = "<p class='success'>Orden #{$new_orden_id} creada exitosamente con total: $" . number_format($total_calculated, 2) . "</p>";
+        header("Location: ordenes_compra.php");
+            exit();
     } else {
         $message = "<p class='success'>Orden creada exitosamente.</p>";
+        header("Location: ordenes_compra.php");
+            exit();
     }
+
     while($conn->more_results() && $conn->next_result()){}
 } else {
     throw new Exception("Error al ejecutar sp_registrar_nueva_orden: " . $stmt->error);
@@ -227,7 +232,7 @@ if (!$ordenes_result) {
 <body>
     <div class="container">
         <h1>Administrar Órdenes de Compra</h1>
-        <p><a href="index.php">Volver al Inicio</a></p>
+        <p><a href="dashboard_admin.php">Volver al Inicio</a></p>
 
         <?php echo $message; ?>
 

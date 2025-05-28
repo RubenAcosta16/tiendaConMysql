@@ -17,7 +17,7 @@
     <div class="container">
         <h1>Administrar Relaciones Producto-Categoría</h1>
         <p>Esta funcionalidad se maneja directamente desde la página de <a href="productos.php">Administrar Productos</a>.</p>
-        <p><a href="index.php">Volver al Inicio</a></p>
+        <p><a href="dashboard_admin.php">Volver al Inicio</a></p>
     </div>
 </body>
 </html>

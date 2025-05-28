@@ -20,6 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("ssi", $nombre, $telefono, $direccion_id);
         if ($stmt->execute()) {
             $message = "<p class='success'>Sucursal agregada exitosamente.</p>";
+            header("Location: sucursales.php");
+            exit();
         } else {
             $message = "<p class='error'>Error al agregar sucursal: " . $stmt->error . "</p>";
         }
@@ -95,7 +97,7 @@ $result = $conn->query($sql);
 <body>
     <div class="container">
         <h1>Administrar Sucursales</h1>
-        <p><a href="index.php">Volver al Inicio</a></p>
+        <p><a href="dashboard_admin.php">Volver al Inicio</a></p>
 
         <?php echo $message; ?>
 

@@ -21,6 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("iiss", $cliente_id, $producto_id, $calificacion, $comentario);
         if ($stmt->execute()) {
             $message = "<p class='success'>Reseña agregada exitosamente.</p>";
+            header("Location: reseñas.php");
+            exit();
         } else {
             $message = "<p class='error'>Error al agregar reseña: " . $stmt->error . "</p>";
         }
@@ -115,7 +117,7 @@ $result = $conn->query($sql);
 <body>
     <div class="container">
         <h1>Administrar Reseñas</h1>
-        <p><a href="index.php">Volver al Inicio</a></p>
+        <p><a href="dashboard_admin.php">Volver al Inicio</a></p>
 
         <?php echo $message; ?>
 

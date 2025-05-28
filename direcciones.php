@@ -25,6 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("ssssssss", $calle, $numero_exterior, $numero_interior, $colonia, $ciudad, $estado, $codigo_postal, $pais);
         if ($stmt->execute()) {
             $message = "<p class='success'>Dirección agregada exitosamente.</p>";
+            header("Location: direcciones.php");
+            exit();
         } else {
             $message = "<p class='error'>Error al agregar dirección: " . $stmt->error . "</p>";
         }
@@ -105,7 +107,7 @@ $result = $conn->query($sql);
 <body>
     <div class="container">
         <h1>Administrar Direcciones</h1>
-        <p><a href="index.php">Volver al Inicio</a></p>
+        <p><a href="dashboard_admin.php">Volver al Inicio</a></p>
 
         <?php echo $message; ?>
 

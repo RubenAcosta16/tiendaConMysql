@@ -23,6 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("sssssi", $nombre_empresa, $rfc, $nombre_contacto, $email_contacto, $telefono_contacto, $direccion_id);
         if ($stmt->execute()) {
             $message = "<p class='success'>Proveedor agregado exitosamente.</p>";
+            header("Location: proveedores.php");
+            exit();
         } else {
             // Manejo de error específico para RFC duplicado
             if ($conn->errno == 1062) { // Código de error MySQL para entrada duplicada
@@ -112,7 +114,7 @@ $result = $conn->query($sql);
 <body>
     <div class="container">
         <h1>Administrar Proveedores</h1>
-        <p><a href="index.php">Volver al Inicio</a></p>
+        <p><a href="dashboard_admin.php">Volver al Inicio</a></p>
 
         <?php echo $message; ?>
 

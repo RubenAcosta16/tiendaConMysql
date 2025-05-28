@@ -34,6 +34,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_empleado'])) {
         $row = $result->fetch_assoc();
         $new_empleado_id = $row['empleado_id'];
         $message = "<p class='success'>Empleado agregado exitosamente. ID de Empleado: " . $new_empleado_id . "</p>";
+        header("Location: empleados.php");
+            exit();
     } else {
         $error_message = $conn->error;
         if (strpos($error_message, 'Duplicate entry') !== false && strpos($error_message, 'for key \'email\'') !== false) {
@@ -177,7 +179,7 @@ $result = $conn->query($sql);
 <body>
     <div class="container">
         <h1>Administrar Empleados</h1>
-        <p><a href="index.php">Volver al Inicio</a></p>
+        <p><a href="dashboard_admin.php">Volver al Inicio</a></p>
 
         <?php echo $message; ?>
 

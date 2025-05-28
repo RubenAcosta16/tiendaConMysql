@@ -148,7 +148,7 @@ $result = $conn->query($sql);
 <body>
     <div class="container">
         <h1>Administrar Clientes</h1>
-        <p><a href="index.php">Volver al Inicio</a></p>
+        <p><a href="dashboard_admin.php">Volver al Inicio</a></p>
 
         <?php echo $message; ?>
 

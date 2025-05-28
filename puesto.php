@@ -19,6 +19,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("ss", $nombre_puesto, $descripcion);
         if ($stmt->execute()) {
             $message = "<p class='success'>Puesto agregado exitosamente.</p>";
+            header("Location: puesto.php");
+            exit();
         } else {
             if ($conn->errno == 1062) { // Error de duplicado para nombre_puesto (si se hiciera unique)
                 $message = "<p class='error'>Error: El nombre del puesto ya existe.</p>";
@@ -93,7 +95,7 @@ $result = $conn->query($sql);
 <body>
     <div class="container">
         <h1>Administrar Puestos</h1>
-        <p><a href="index.php">Volver al Inicio</a></p>
+        <p><a href="dashboard_admin.php">Volver al Inicio</a></p>
 
         <?php echo $message; ?>
 
