@@ -1,6 +1,7 @@
 <?php
 // datos_personas.php
 require_once 'db.php';
+require_once 'protected_route.php';
 
 $conn = connectDB();
 
