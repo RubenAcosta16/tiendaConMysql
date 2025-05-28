@@ -1,5 +1,4 @@
 <?php
-// direcciones.php
 require_once 'db.php';
 require_once 'protected_route.php';
 
@@ -7,9 +6,6 @@ $conn = connectDB();
 
 $message = '';
 
-// --- Lógica para C, U, D ---
-
-// Crear/Actualizar Dirección
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add_direccion'])) {
         $calle = $_POST['calle'];
@@ -53,11 +49,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Eliminar Dirección
 if (isset($_GET['delete_direccion'])) {
     $direccion_id = $_GET['delete_direccion'];
 
-    // Verificar si la dirección está siendo usada por alguna sucursal
     $check_stmt = $conn->prepare("SELECT COUNT(*) AS count FROM sucursales WHERE direccion_id = ?");
     $check_stmt->bind_param("i", $direccion_id);
     $check_stmt->execute();
@@ -79,7 +73,6 @@ if (isset($_GET['delete_direccion'])) {
     }
 }
 
-// --- Obtener datos para el formulario de edición ---
 $edit_direccion = null;
 if (isset($_GET['edit_direccion'])) {
     $direccion_id = $_GET['edit_direccion'];
@@ -91,7 +84,6 @@ if (isset($_GET['edit_direccion'])) {
     $stmt->close();
 }
 
-// --- Leer Direcciones ---
 $sql = "SELECT * FROM direcciones ORDER BY direccion_id DESC";
 $result = $conn->query($sql);
 ?>

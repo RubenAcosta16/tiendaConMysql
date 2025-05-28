@@ -1,5 +1,4 @@
 <?php
-// sucursales.php
 require_once 'db.php';
 require_once 'protected_route.php';
 
@@ -7,9 +6,6 @@ $conn = connectDB();
 
 $message = '';
 
-// --- Lógica para C, U, D ---
-
-// Crear/Actualizar Sucursal
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add_sucursal'])) {
         $nombre = $_POST['nombre'];
@@ -43,7 +39,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Eliminar Sucursal
 if (isset($_GET['delete_sucursal'])) {
     $sucursal_id = $_GET['delete_sucursal'];
     $stmt = $conn->prepare("DELETE FROM sucursales WHERE sucursal_id = ?");
@@ -56,7 +51,6 @@ if (isset($_GET['delete_sucursal'])) {
     $stmt->close();
 }
 
-// --- Obtener datos para el formulario de edición ---
 $edit_sucursal = null;
 if (isset($_GET['edit_sucursal'])) {
     $sucursal_id = $_GET['edit_sucursal'];
@@ -68,7 +62,6 @@ if (isset($_GET['edit_sucursal'])) {
     $stmt->close();
 }
 
-// --- Obtener todas las direcciones para el select ---
 $direcciones_result = $conn->query("SELECT direccion_id, calle, numero_exterior, colonia FROM direcciones");
 $direcciones = [];
 if ($direcciones_result->num_rows > 0) {
@@ -77,12 +70,11 @@ if ($direcciones_result->num_rows > 0) {
     }
 }
 
-// --- Leer Sucursales (con detalles de dirección) ---
 $sql = "SELECT s.sucursal_id, s.nombre, s.telefono,
                d.calle, d.numero_exterior, d.numero_interior, d.colonia, d.ciudad, d.estado, d.codigo_postal, d.pais
         FROM sucursales s
         JOIN direcciones d ON s.direccion_id = d.direccion_id
-        ORDER BY s.sucursal_id DESC"; // Ordenar para ver los últimos agregados
+        ORDER BY s.sucursal_id DESC"; 
 $result = $conn->query($sql);
 ?>
 

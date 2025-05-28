@@ -1,5 +1,4 @@
 <?php
-// datos_personas.php
 require_once 'db.php';
 require_once 'protected_route.php';
 
@@ -7,9 +6,6 @@ $conn = connectDB();
 
 $message = '';
 
-// --- Lógica para C, U, D ---
-
-// Crear/Actualizar Datos de Persona
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add_persona'])) {
         $nombre = $_POST['nombre'];
@@ -26,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: datos_personas.php");
             exit();
         } else {
-            if ($conn->errno == 1062) { // Error de duplicado de email
+            if ($conn->errno == 1062) { 
                 $message = "<p class='error'>Error al agregar datos de persona: El email ya existe.</p>";
             } else {
                 $message = "<p class='error'>Error al agregar datos de persona: " . $stmt->error . "</p>";
@@ -47,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt->execute()) {
             $message = "<p class='success'>Datos de persona actualizados exitosamente.</p>";
         } else {
-            if ($conn->errno == 1062) { // Error de duplicado de email
+            if ($conn->errno == 1062) { 
                 $message = "<p class='error'>Error al actualizar datos de persona: El email ya existe.</p>";
             } else {
                 $message = "<p class='error'>Error al actualizar datos de persona: " . $stmt->error . "</p>";
@@ -57,11 +53,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Eliminar Datos de Persona
 if (isset($_GET['delete_persona'])) {
     $datos_personas_id = $_GET['delete_persona'];
 
-    // Verificar si esta persona es un cliente
     $check_client_stmt = $conn->prepare("SELECT COUNT(*) FROM clientes WHERE datos_personas_id = ?");
     $check_client_stmt->bind_param("i", $datos_personas_id);
     $check_client_stmt->execute();
@@ -83,7 +77,6 @@ if (isset($_GET['delete_persona'])) {
     }
 }
 
-// --- Obtener datos para el formulario de edición ---
 $edit_persona = null;
 if (isset($_GET['edit_persona'])) {
     $datos_personas_id = $_GET['edit_persona'];
@@ -95,7 +88,6 @@ if (isset($_GET['edit_persona'])) {
     $stmt->close();
 }
 
-// --- Leer Datos de Personas ---
 $sql = "SELECT * FROM datos_personas ORDER BY datos_personas_id DESC";
 $result = $conn->query($sql);
 ?>

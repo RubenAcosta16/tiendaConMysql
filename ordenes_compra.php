@@ -1,5 +1,4 @@
 <?php
-// ordenes_compra.php
 require_once 'db.php';
 require_once 'protected_route.php';
 
@@ -7,7 +6,6 @@ $conn = connectDB();
 
 $message = '';
 
-// --- Lógica para Crear/Actualizar Orden (usando SP) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if (isset($_POST['add_orden'])) {
     $cliente_id = $_POST['cliente_id'];
@@ -15,21 +13,18 @@ if (isset($_POST['add_orden'])) {
     $sucursal_id = $_POST['sucursal_id'] ?: NULL;
     $direccion_envio_id = $_POST['direccion_envio_id'] ?: NULL;
     
-    // MEJORAR: Asegurar que los valores sean enteros
     $productos_array = [];
     foreach ($_POST['productos'] as $producto) {
         if (!empty($producto['producto_id']) && !empty($producto['cantidad'])) {
             $productos_array[] = [
-                'producto_id' => (int)$producto['producto_id'], // Convertir explícitamente a entero
-                'cantidad' => (int)$producto['cantidad']        // Convertir explícitamente a entero
+                'producto_id' => (int)$producto['producto_id'], 
+                'cantidad' => (int)$producto['cantidad']       
             ];
         }
     }
     
     $productos_json = json_encode($productos_array);
     
-    // DEBUG: Agregar este echo temporal para ver qué se está enviando
-    // echo "JSON enviado: " . $productos_json . "<br>";
     
     try {
         $stmt = $conn->prepare("CALL sp_registrar_nueva_orden(?, ?, ?, ?, ?)");
@@ -103,9 +98,6 @@ if (isset($_POST['add_orden'])) {
     }
 }
 
-// --- Lógica para Eliminar Orden/Detalle (con validación de SP si aplica) ---
-
-// Eliminar una Orden completa (la FK en pagos y ordenes_detalle con ON DELETE CASCADE se encargará)
 if (isset($_GET['delete_orden'])) {
     $orden_id = $_GET['delete_orden'];
     $stmt = $conn->prepare("DELETE FROM ordenes_compra WHERE orden_id = ?");
@@ -118,7 +110,6 @@ if (isset($_GET['delete_orden'])) {
     $stmt->close();
 }
 
-// Eliminar un producto de una orden usando el SP
 if (isset($_GET['delete_detalle_orden'])) {
     list($orden_id, $producto_id) = explode('_', $_GET['delete_detalle_orden']);
 
@@ -142,7 +133,6 @@ if (isset($_GET['delete_detalle_orden'])) {
 }
 
 
-// --- Obtener datos para los selects en el formulario de creación de orden ---
 $clientes_result = $conn->query("
     SELECT c.cliente_id, dp.nombre, dp.apellido_paterno
     FROM clientes c
@@ -181,7 +171,6 @@ $productos_result = $conn->query("SELECT producto_id, nombre, precio, stock FROM
 $productos_disponibles = [];
 while ($row = $productos_result->fetch_assoc()) { $productos_disponibles[] = $row; }
 
-// --- Obtener datos para el formulario de edición de estado de orden ---
 $edit_orden_estado = null;
 if (isset($_GET['edit_estado_orden'])) {
     $orden_id = $_GET['edit_estado_orden'];
@@ -194,7 +183,6 @@ if (isset($_GET['edit_estado_orden'])) {
 }
 
 
-// --- Leer Órdenes de Compra (con información adicional) ---
 
 $sql_ordenes = "SELECT
     oc.orden_id,
@@ -371,7 +359,6 @@ if (!$ordenes_result) {
                             </td>
                         </tr>
                         <?php
-                        // Mostrar detalles de la orden si se solicitan
                         if (isset($_GET['view_details']) && $_GET['view_details'] == $orden['orden_id']) {
                             $orden_id_detalle = $orden['orden_id'];
                             $sql_detalles = "SELECT od.*, p.nombre AS producto_nombre, p.sku, p.stock AS producto_stock_actual
@@ -464,7 +451,7 @@ if (!$ordenes_result) {
     </div>
 
     <script>
-        let productoIndex = 1; // Para generar IDs únicos para los campos de productos
+        let productoIndex = 1; 
 
         document.getElementById('add_producto_btn').addEventListener('click', function() {
             const container = document.getElementById('productos_container');

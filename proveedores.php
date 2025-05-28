@@ -1,5 +1,4 @@
 <?php
-// proveedores.php
 require_once 'db.php';
 require_once 'protected_route.php';
 
@@ -7,9 +6,6 @@ $conn = connectDB();
 
 $message = '';
 
-// --- Lógica para C, U, D ---
-
-// Crear/Actualizar Proveedor
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add_proveedor'])) {
         $nombre_empresa = $_POST['nombre_empresa'];
@@ -26,8 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: proveedores.php");
             exit();
         } else {
-            // Manejo de error específico para RFC duplicado
-            if ($conn->errno == 1062) { // Código de error MySQL para entrada duplicada
+            if ($conn->errno == 1062) { 
                 $message = "<p class='error'>Error al agregar proveedor: El RFC ya existe. Por favor, ingrese uno diferente.</p>";
             } else {
                 $message = "<p class='error'>Error al agregar proveedor: " . $stmt->error . "</p>";
@@ -48,8 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt->execute()) {
             $message = "<p class='success'>Proveedor actualizado exitosamente.</p>";
         } else {
-             // Manejo de error específico para RFC duplicado
-            if ($conn->errno == 1062) { // Código de error MySQL para entrada duplicada
+            if ($conn->errno == 1062) { 
                 $message = "<p class='error'>Error al actualizar proveedor: El RFC ya existe. Por favor, ingrese uno diferente.</p>";
             } else {
                 $message = "<p class='error'>Error al actualizar proveedor: " . $stmt->error . "</p>";
@@ -59,7 +53,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Eliminar Proveedor
 if (isset($_GET['delete_proveedor'])) {
     $proveedor_id = $_GET['delete_proveedor'];
     $stmt = $conn->prepare("DELETE FROM proveedores WHERE proveedor_id = ?");
@@ -72,7 +65,6 @@ if (isset($_GET['delete_proveedor'])) {
     $stmt->close();
 }
 
-// --- Obtener datos para el formulario de edición ---
 $edit_proveedor = null;
 if (isset($_GET['edit_proveedor'])) {
     $proveedor_id = $_GET['edit_proveedor'];
@@ -84,7 +76,6 @@ if (isset($_GET['edit_proveedor'])) {
     $stmt->close();
 }
 
-// --- Obtener todas las direcciones para el select ---
 $direcciones_result = $conn->query("SELECT direccion_id, calle, numero_exterior, colonia FROM direcciones");
 $direcciones = [];
 if ($direcciones_result->num_rows > 0) {
@@ -93,9 +84,8 @@ if ($direcciones_result->num_rows > 0) {
     }
 }
 
-// --- Leer Proveedores (con detalles de dirección) ---
 $sql = "SELECT p.proveedor_id, p.nombre_empresa, p.rfc, p.nombre_contacto, p.email_contacto, p.telefono_contacto,
-               p.direccion_id,  -- <--- AGREGA ESTA LÍNEA
+               p.direccion_id,  
                d.calle, d.numero_exterior, d.numero_interior, d.colonia, d.ciudad, d.estado, d.codigo_postal, d.pais
         FROM proveedores p
         LEFT JOIN direcciones d ON p.direccion_id = d.direccion_id
@@ -181,13 +171,13 @@ $result = $conn->query($sql);
                             <td><?php echo htmlspecialchars($row['telefono_contacto']); ?></td>
                             <td>
                                 <?php
-                                if ($row['direccion_id']) { // Solo muestra si hay una dirección asociada
+                                if ($row['direccion_id']) { 
                                     echo htmlspecialchars($row['calle'] . ' ' . $row['numero_exterior'] .
                                         ($row['numero_interior'] ? ' Int. ' . $row['numero_interior'] : '') .
                                         ', ' . $row['colonia'] . ', ' . $row['ciudad'] . ', ' . $row['estado'] .
                                         ' C.P. ' . $row['codigo_postal'] . ', ' . $row['pais']);
                                 } else {
-                                    echo "N/A"; // Si no hay dirección asociada
+                                    echo "N/A"; 
                                 }
                                 ?>
                             </td>

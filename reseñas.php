@@ -1,5 +1,4 @@
 <?php
-// reseñas.php
 require_once 'db.php';
 require_once 'protected_route.php';
 
@@ -7,9 +6,6 @@ $conn = connectDB();
 
 $message = '';
 
-// --- Lógica para C, U, D ---
-
-// Crear/Actualizar Reseña
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add_reseña'])) {
         $cliente_id = $_POST['cliente_id'];
@@ -45,7 +41,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Eliminar Reseña
 if (isset($_GET['delete_reseña'])) {
     $reseña_id = $_GET['delete_reseña'];
     $stmt = $conn->prepare("DELETE FROM reseñas WHERE reseña_id = ?");
@@ -58,7 +53,6 @@ if (isset($_GET['delete_reseña'])) {
     $stmt->close();
 }
 
-// --- Obtener datos para el formulario de edición ---
 $edit_reseña = null;
 if (isset($_GET['edit_reseña'])) {
     $reseña_id = $_GET['edit_reseña'];
@@ -70,7 +64,6 @@ if (isset($_GET['edit_reseña'])) {
     $stmt->close();
 }
 
-// --- Obtener clientes para el select ---
 $clientes_result = $conn->query("
     SELECT c.cliente_id, dp.nombre, dp.apellido_paterno, dp.apellido_materno
     FROM clientes c
@@ -84,7 +77,6 @@ if ($clientes_result && $clientes_result->num_rows > 0) {
     }
 }
 
-// --- Obtener productos para el select ---
 $productos_result = $conn->query("SELECT producto_id, nombre, precio FROM productos ORDER BY nombre");
 $productos = [];
 if ($productos_result->num_rows > 0) {
@@ -93,7 +85,6 @@ if ($productos_result->num_rows > 0) {
     }
 }
 
-// --- Leer Reseñas (con nombres de cliente y producto) ---
 $sql = "SELECT
             r.reseña_id, r.calificacion, r.comentario, r.fecha_reseña,
             dp.nombre AS nombre_cliente, dp.apellido_paterno AS apellido_cliente,

@@ -1,7 +1,7 @@
 <?php
-// auth.php
-session_start(); // Inicia la sesión PHP
-ini_set('display_errors', 1); // Habilitar display de errores para depuración
+
+session_start(); 
+ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
@@ -14,7 +14,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $email = $_POST['email'];
         $password = $_POST['password'];
 
-        // Consulta para obtener datos del cliente y su contraseña uniendo con datos_personas
         $stmt = $conn->prepare("
             SELECT c.cliente_id, dp.nombre, dp.email, c.password 
             FROM clientes c
@@ -41,12 +40,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $cliente = $result->fetch_assoc();
         $stmt->close();
 
-        // Verificar si se encontró el cliente y si la contraseña es correcta
         if ($cliente && password_verify($password, $cliente['password'])) {
             $_SESSION['user_id'] = $cliente['cliente_id'];
             $_SESSION['user_name'] = $cliente['nombre'];
             $_SESSION['user_role'] = 'cliente';
-            echo json_encode(['success' => true, 'role' => 'cliente', 'userName' => $cliente['nombre']]); // Devolver el nombre para localStorage
+            echo json_encode(['success' => true, 'role' => 'cliente', 'userName' => $cliente['nombre']]); 
         } else {
             echo json_encode(['success' => false, 'message' => 'Credenciales de cliente incorrectas o cliente no encontrado.']);
         }
@@ -54,14 +52,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $username = $_POST['username'];
         $password = $_POST['password'];
 
-        // Credenciales de admin fijas
         $admin_username = 'admin';
 $admin_password = '12345678';
 
-// NOTA: En un sistema real, las credenciales del admin también estarían en una DB.
-// Aquí las hardcodeamos como ejemplo.
 if ($username === $admin_username && $password === $admin_password) {
-    $_SESSION['user_id'] = 0; // ID ficticio para admin
+    $_SESSION['user_id'] = 0; 
     $_SESSION['user_name'] = 'Administrador';
     $_SESSION['user_role'] = 'admin';
     echo json_encode(['success' => true, 'role' => 'admin', 'userName' => 'Administrador']);

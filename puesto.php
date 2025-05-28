@@ -1,5 +1,4 @@
 <?php
-// puesto.php
 require_once 'db.php';
 require_once 'protected_route.php';
 
@@ -7,9 +6,6 @@ $conn = connectDB();
 
 $message = '';
 
-// --- Lógica para C, U, D ---
-
-// Crear/Actualizar Puesto
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add_puesto'])) {
         $nombre_puesto = $_POST['nombre_puesto'];
@@ -22,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: puesto.php");
             exit();
         } else {
-            if ($conn->errno == 1062) { // Error de duplicado para nombre_puesto (si se hiciera unique)
+            if ($conn->errno == 1062) { 
                 $message = "<p class='error'>Error: El nombre del puesto ya existe.</p>";
             } else {
                 $message = "<p class='error'>Error al agregar puesto: " . $stmt->error . "</p>";
@@ -49,7 +45,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Eliminar Puesto
 if (isset($_GET['delete_puesto'])) {
     $puesto_id = $_GET['delete_puesto'];
     $stmt = $conn->prepare("DELETE FROM puesto WHERE puesto_id = ?");
@@ -57,7 +52,6 @@ if (isset($_GET['delete_puesto'])) {
     if ($stmt->execute()) {
         $message = "<p class='success'>Puesto eliminado exitosamente.</p>";
     } else {
-        // Error de restricción de clave foránea (ON DELETE RESTRICT)
         if ($conn->errno == 1451) {
             $message = "<p class='error'>Error al eliminar puesto: Hay empleados asignados a este puesto. Primero reasigne o elimine a los empleados.</p>";
         } else {
@@ -67,7 +61,6 @@ if (isset($_GET['delete_puesto'])) {
     $stmt->close();
 }
 
-// --- Obtener datos para el formulario de edición ---
 $edit_puesto = null;
 if (isset($_GET['edit_puesto'])) {
     $puesto_id = $_GET['edit_puesto'];
@@ -79,7 +72,6 @@ if (isset($_GET['edit_puesto'])) {
     $stmt->close();
 }
 
-// --- Leer Puestos ---
 $sql = "SELECT * FROM puesto ORDER BY puesto_id DESC";
 $result = $conn->query($sql);
 ?>

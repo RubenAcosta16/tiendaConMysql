@@ -1,9 +1,5 @@
 <?php
-// productos_categorias.php
-// Este archivo sería para gestionar la relación N:M entre productos y categorías
-// si se necesitara una interfaz separada.
-// En este ejemplo, la gestión se integra directamente en productos.php
-// para mayor simplicidad.
+
 ?>
 <!DOCTYPE html>
 <html lang="es">

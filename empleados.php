@@ -1,5 +1,4 @@
 <?php
-// empleados.php
 require_once 'db.php';
 require_once 'protected_route.php';
 
@@ -7,9 +6,6 @@ $conn = connectDB();
 
 $message = '';
 
-// --- Lógica para C, U, D ---
-
-// Crear Empleado (usando el procedimiento almacenado)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_empleado'])) {
     $nombre = $_POST['nombre'];
     $apellido_paterno = $_POST['apellido_paterno'];
@@ -21,7 +17,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_empleado'])) {
     $puesto_id = $_POST['puesto_id'];
     $fecha_contratacion = $_POST['fecha_contratacion'];
 
-    // Llama al procedimiento almacenado
     $stmt = $conn->prepare("CALL sp_crear_empleado(?, ?, ?, ?, ?, ?, ?, ?, ?, @new_empleado_id)");
     $stmt->bind_param("ssssssiis",
         $nombre, $apellido_paterno, $apellido_materno, $email, $fecha_nacimiento,
@@ -29,7 +24,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_empleado'])) {
     );
 
     if ($stmt->execute()) {
-        // Obtener el ID del empleado recién creado
         $result = $conn->query("SELECT @new_empleado_id as empleado_id");
         $row = $result->fetch_assoc();
         $new_empleado_id = $row['empleado_id'];
@@ -47,7 +41,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_empleado'])) {
         }
     }
     $stmt->close();
-    // Limpiar resultados de la llamada al SP si es necesario para futuras consultas
     while ($conn->more_results() && $conn->next_result()) {
         if ($res = $conn->store_result()) {
             $res->free();
@@ -55,7 +48,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_empleado'])) {
     }
 }
 
-// Actualizar Empleado y Datos de Persona
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_empleado'])) {
     $empleado_id = $_POST['empleado_id'];
     $datos_personas_id = $_POST['datos_personas_id'];
@@ -70,10 +62,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_empleado'])) {
     $fecha_nacimiento = $_POST['fecha_nacimiento'];
     $telefono = $_POST['telefono'];
 
-    // Iniciar una transacción para asegurar la consistencia
     $conn->begin_transaction();
     try {
-        // 1. Actualizar datos_personas
         $stmt_persona = $conn->prepare("UPDATE datos_personas SET nombre = ?, apellido_paterno = ?, apellido_materno = ?, email = ?, fecha_nacimiento = ?, telefono = ? WHERE datos_personas_id = ?");
         $stmt_persona->bind_param("ssssssi", $nombre, $apellido_paterno, $apellido_materno, $email, $fecha_nacimiento, $telefono, $datos_personas_id);
         if (!$stmt_persona->execute()) {
@@ -81,7 +71,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_empleado'])) {
         }
         $stmt_persona->close();
 
-        // 2. Actualizar datos del empleado
         $stmt_empleado = $conn->prepare("UPDATE empleados SET sucursal_id = ?, puesto_id = ?, fecha_contratacion = ? WHERE empleado_id = ?");
         $stmt_empleado->bind_param("iisi", $sucursal_id, $puesto_id, $fecha_contratacion, $empleado_id);
         if (!$stmt_empleado->execute()) {
@@ -95,18 +84,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_empleado'])) {
     } catch (Exception $e) {
         $conn->rollback();
         $message = "<p class='error'>" . $e->getMessage() . "</p>";
-        if ($conn->errno == 1062) { // Error de duplicado de email
+        if ($conn->errno == 1062) {
             $message = "<p class='error'>Error al actualizar: El email ya existe para otra persona.</p>";
         }
     }
 }
 
-// Eliminar Empleado
 if (isset($_GET['delete_empleado'])) {
     $empleado_id = $_GET['delete_empleado'];
 
-    // Al eliminar el empleado, debido a ON DELETE CASCADE, también se eliminarán
-    // los datos de la persona asociada en 'datos_personas'.
+
     $stmt = $conn->prepare("DELETE FROM empleados WHERE empleado_id = ?");
     $stmt->bind_param("i", $empleado_id);
     if ($stmt->execute()) {
@@ -117,7 +104,6 @@ if (isset($_GET['delete_empleado'])) {
     $stmt->close();
 }
 
-// --- Obtener datos para el formulario de edición ---
 $edit_empleado = null;
 if (isset($_GET['edit_empleado'])) {
     $empleado_id = $_GET['edit_empleado'];
@@ -136,7 +122,6 @@ if (isset($_GET['edit_empleado'])) {
     $stmt->close();
 }
 
-// --- Obtener sucursales para el select ---
 $sucursales_result = $conn->query("SELECT sucursal_id, nombre FROM sucursales ORDER BY nombre");
 $sucursales = [];
 if ($sucursales_result->num_rows > 0) {
@@ -145,7 +130,6 @@ if ($sucursales_result->num_rows > 0) {
     }
 }
 
-// --- Obtener puestos para el select ---
 $puestos_result = $conn->query("SELECT puesto_id, nombre_puesto FROM puesto ORDER BY nombre_puesto");
 $puestos = [];
 if ($puestos_result->num_rows > 0) {
@@ -154,7 +138,6 @@ if ($puestos_result->num_rows > 0) {
     }
 }
 
-// --- Leer Empleados (con datos de persona, sucursal y puesto) ---
 $sql = "SELECT
             e.empleado_id, e.fecha_contratacion,
             dp.nombre, dp.apellido_paterno, dp.apellido_materno, dp.email, dp.telefono,

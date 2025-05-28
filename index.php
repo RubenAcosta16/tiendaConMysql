@@ -6,7 +6,6 @@
     <title>Bienvenido - Iniciar Sesión o Registrarse</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
-        /* ... Tu CSS existente ... */
         .auth-container {
             max-width: 600px;
             margin: 50px auto;
@@ -31,7 +30,7 @@
         .auth-container input[type="text"],
         .auth-container input[type="email"],
         .auth-container input[type="password"],
-        .auth-container input[type="date"] { /* Añadido para fecha_nacimiento */
+        .auth-container input[type="date"] { 
             width: calc(100% - 22px);
             padding: 10px;
             margin-bottom: 15px;
@@ -76,7 +75,7 @@
             text-decoration: underline;
         }
         #loginClienteForm, #registerClienteForm {
-            display: none; /* Ocultar por defecto, mostrar con JS */
+            display: none; 
         }
     </style>
 </head>
@@ -165,7 +164,6 @@
                 registerClienteForm.style.display = 'none';
             }
 
-            // Mostrar el formulario de admin por defecto al cargar la página
             adminLoginForm.style.display = 'block';
 
             showLoginAdminBtn.addEventListener('click', function(e) {
@@ -186,14 +184,13 @@
                 registerClienteForm.style.display = 'block';
             });
 
-            // Función para manejar la respuesta de autenticación/registro
             function handleAuthResponse(data, defaultUserName) {
                 if (data.success) {
                     authMessage.className = 'message success';
                     authMessage.textContent = 'Inicio de sesión/Registro exitoso. Redirigiendo...';
                     localStorage.setItem('loggedIn', 'true');
                     localStorage.setItem('userRole', data.role);
-                    localStorage.setItem('userName', data.userName || defaultUserName); // Usa el nombre devuelto por el servidor o un valor por defecto
+                    localStorage.setItem('userName', data.userName || defaultUserName); 
                     setTimeout(() => {
                         if (data.role === 'admin') {
                             window.location.href = 'dashboard_admin.php';
@@ -207,7 +204,6 @@
                 }
             }
 
-            // Lógica para el formulario de Login Admin
             document.getElementById('formAdminLogin').addEventListener('submit', function(event) {
                 event.preventDefault();
                 const formData = new FormData(this);
@@ -231,7 +227,6 @@
                 });
             });
 
-            // Lógica para el formulario de Login Cliente
             document.getElementById('formClienteLogin').addEventListener('submit', function(event) {
                 event.preventDefault();
                 const formData = new FormData(this);
@@ -247,7 +242,7 @@
                     }
                     return response.json();
                 })
-                .then(data => handleAuthResponse(data, 'Cliente')) // "Cliente" es un placeholder, el servidor debería devolver el nombre
+                .then(data => handleAuthResponse(data, 'Cliente')) 
                 .catch(error => {
                     console.error('Error:', error);
                     authMessage.className = 'message error';
@@ -255,7 +250,6 @@
                 });
             });
 
-            // Lógica para el formulario de Registro Cliente
             document.getElementById('formClienteRegister').addEventListener('submit', function(event) {
                 event.preventDefault();
                 const formData = new FormData(this);

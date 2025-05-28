@@ -1,5 +1,5 @@
 <?php
-require_once 'protected_route.php'; // ¡PROTEGER ESTA PÁGINA!
+require_once 'protected_route.php'; 
 ?>
 <!DOCTYPE html>
 <html lang="es">

@@ -1,5 +1,5 @@
 <?php
-require_once 'protected_route.php'; // ¡PROTEGER ESTA PÁGINA!
+require_once 'protected_route.php'; 
 require_once 'db.php';
 
 $conn = connectDB();
@@ -8,7 +8,6 @@ $message = '';
 $productos_disponibles = [];
 $cliente_id = $_SESSION['user_id'];
 
-// Obtener productos disponibles
 $productos_result = $conn->query("SELECT producto_id, nombre, descripcion, precio, stock FROM productos WHERE stock > 0 ORDER BY nombre");
 if ($productos_result->num_rows > 0) {
     while ($row = $productos_result->fetch_assoc()) {
@@ -16,7 +15,6 @@ if ($productos_result->num_rows > 0) {
     }
 }
 
-// Procesar compra
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['realizar_compra'])) {
     $productos_seleccionados_json_array = [];
     $has_products = false;
@@ -27,7 +25,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['realizar_compra'])) {
         foreach ($_POST['productos_id'] as $index => $producto_id) {
             $cantidad = isset($_POST['cantidades'][$index]) ? (int)$_POST['cantidades'][$index] : 0;
             if ($producto_id > 0 && $cantidad > 0) {
-                // Obtener precio del producto desde la BD para seguridad
                 $stmt_prod = $conn->prepare("SELECT precio, stock FROM productos WHERE producto_id = ?");
                 $stmt_prod->bind_param("i", $producto_id);
                 $stmt_prod->execute();
@@ -39,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['realizar_compra'])) {
                         $has_products = true;
                     } else {
                         $message = "<p class='error'>La cantidad solicitada para un producto excede el stock. No se procesó la compra.</p>";
-                        $has_products = false; // Detener si hay error de stock
+                        $has_products = false; 
                         break;
                     }
                 }
@@ -68,7 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['realizar_compra'])) {
 
             while ($conn->more_results() && $conn->next_result());
 
-            // Recargar productos
             $productos_disponibles = [];
             $productos_result = $conn->query("SELECT producto_id, nombre, descripcion, precio, stock FROM productos WHERE stock > 0 ORDER BY nombre");
             if ($productos_result->num_rows > 0) {
@@ -96,13 +92,12 @@ $conn->close();
     <title>Dashboard de Cliente - Realizar Compra</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
-        /* Reutilizamos los estilos de product-input-row */
         .product-input-row {
             display: flex;
             align-items: center;
             margin-bottom: 10px;
-            gap: 10px; /* Espacio entre elementos */
-            flex-wrap: wrap; /* Permite que los elementos se ajusten en pantallas pequeñas */
+            gap: 10px; 
+            flex-wrap: wrap; 
         }
 
         .product-input-row select,
@@ -113,17 +108,17 @@ $conn->close();
         }
 
         .product-input-row select {
-            flex-grow: 1; /* Permite que el select ocupe el espacio disponible */
+            flex-grow: 1; 
             min-width: 200px;
         }
 
         .product-input-row input[type="number"] {
-            width: 80px; /* Ancho fijo para la cantidad */
+            width: 80px; 
             text-align: center;
         }
 
         .product-input-row button {
-            background-color: #dc3545; /* Rojo para eliminar */
+            background-color: #dc3545; 
             color: white;
             padding: 8px 12px;
             border: none;
@@ -137,8 +132,8 @@ $conn->close();
         }
 
         .product-price, .product-stock-info, .product-subtotal {
-            white-space: nowrap; /* Evita que el texto se rompa */
-            min-width: 120px; /* Ancho mínimo para mantener el formato */
+            white-space: nowrap;
+            min-width: 120px; 
             font-size: 0.9em;
             padding: 8px;
             background-color: #f0f0f0;
@@ -248,15 +243,14 @@ $conn->close();
                 <button type="button" onclick="removeProductToCartRow(this)">Eliminar</button>
             `;
             container.appendChild(newRow);
-            updateGrandTotal(); // Actualizar total al agregar
+            updateGrandTotal(); 
         }
 
         function removeProductToCartRow(button) {
-            // No permitir eliminar la última fila si es la única
             const container = document.getElementById('products-cart-container');
             if (container.children.length > 1) {
                 button.parentNode.remove();
-                updateGrandTotal(); // Actualizar total al eliminar
+                updateGrandTotal(); 
             } else {
                 alert("Debe haber al menos un producto.");
             }
@@ -275,7 +269,6 @@ $conn->close();
             const stock = parseInt(selectedOption.getAttribute('data-stock')) || 0;
             let quantity = parseInt(quantityInput.value) || 0;
 
-            // Validar stock
             if (quantity > stock && stock > 0) {
                 alert('La cantidad excede el stock disponible (' + stock + ').');
                 quantityInput.value = stock;
@@ -293,7 +286,7 @@ $conn->close();
             priceSpan.textContent = `Precio: $${price.toFixed(2)}`;
             stockSpan.textContent = `Stock: ${stock > 0 ? stock : '--'}`;
             subtotalSpan.textContent = `Subtotal: $${subtotal.toFixed(2)}`;
-            subtotalSpan.dataset.value = subtotal; // Guardar valor para fácil acceso
+            subtotalSpan.dataset.value = subtotal;
 
             updateGrandTotal();
         }
@@ -308,7 +301,7 @@ $conn->close();
             document.getElementById('grand-total').textContent = `$${grandTotal.toFixed(2)}`;
             document.getElementById('grand-total').dataset.value = grandTotal;
 
-            updateChange(); // Actualizar cambio y validación de pago
+            updateChange(); 
         }
 
         function updateChange() {
@@ -343,21 +336,20 @@ $conn->close();
         }
 
         function validatePurchase() {
-            updateGrandTotal(); // Asegurarse de que todo esté actualizado
+            updateGrandTotal(); 
             const grandTotal = parseFloat(document.getElementById('grand-total').dataset.value) || 0;
             const paymentAmount = parseFloat(document.getElementById('cantidad_pago').value) || 0;
 
             if (grandTotal <= 0) {
                 alert("Debe agregar al menos un producto válido.");
-                return false; // Prevenir envío
+                return false; 
             }
 
             if (paymentAmount < grandTotal) {
                 alert("La cantidad pagada es insuficiente.");
-                return false; // Prevenir envío
+                return false; 
             }
 
-            // Validar stock una última vez
              const rows = document.querySelectorAll('.product-input-row');
              for (const row of rows) {
                 const selectElement = row.querySelector('select');
@@ -368,22 +360,21 @@ $conn->close();
 
                 if (selectElement.value && quantity > stock) {
                     alert(`El stock para ${selectedOption.text.split('(')[0].trim()} ha cambiado y no es suficiente. Por favor, revise su pedido.`);
-                     updateRowDetails(quantityInput); // Re-ajusta y actualiza
+                     updateRowDetails(quantityInput); 
                     return false;
                 }
              }
 
 
-            return true; // Permitir envío
+            return true; 
         }
 
-        // Inicializar todo al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
             const productSelects = document.querySelectorAll('#products-cart-container select[name="productos_id[]"]');
             productSelects.forEach(select => {
-                updateRowDetails(select); // Llama a la función que ahora actualiza todo
+                updateRowDetails(select); 
             });
-             updateGrandTotal(); // Calcular total inicial y validar pago
+             updateGrandTotal(); 
         });
     </script>
 </body>

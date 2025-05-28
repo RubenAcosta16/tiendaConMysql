@@ -1,5 +1,5 @@
 <?php
-// categorias.php
+
 require_once 'db.php';
 require_once 'protected_route.php';
 
@@ -7,9 +7,6 @@ $conn = connectDB();
 
 $message = '';
 
-// --- Lógica para C, U, D ---
-
-// Crear/Actualizar Categoría
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add_categoria'])) {
         $nombre = $_POST['nombre'];
@@ -22,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: categorias.php");
             exit();
         } else {
-            if ($conn->errno == 1062) { // Error de duplicado de nombre
+            if ($conn->errno == 1062) { 
                 $message = "<p class='error'>Error: El nombre de la categoría ya existe.</p>";
             } else {
                 $message = "<p class='error'>Error al agregar categoría: " . $stmt->error . "</p>";
@@ -49,11 +46,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Eliminar Categoría
 if (isset($_GET['delete_categoria'])) {
     $categoria_id = $_GET['delete_categoria'];
 
-    // Verificar si la categoría está asociada a algún producto
     $check_products_stmt = $conn->prepare("SELECT COUNT(*) FROM productos_categorias WHERE categoria_id = ?");
     $check_products_stmt->bind_param("i", $categoria_id);
     $check_products_stmt->execute();
@@ -75,7 +70,6 @@ if (isset($_GET['delete_categoria'])) {
     }
 }
 
-// --- Obtener datos para el formulario de edición ---
 $edit_categoria = null;
 if (isset($_GET['edit_categoria'])) {
     $categoria_id = $_GET['edit_categoria'];
@@ -87,7 +81,6 @@ if (isset($_GET['edit_categoria'])) {
     $stmt->close();
 }
 
-// --- Leer Categorías ---
 $sql = "SELECT * FROM categorias ORDER BY categoria_id DESC";
 $result = $conn->query($sql);
 ?>

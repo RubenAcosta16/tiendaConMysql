@@ -1,5 +1,4 @@
 <?php
-// productos.php
 require_once 'db.php';
 require_once 'protected_route.php';
 
@@ -7,9 +6,6 @@ $conn = connectDB();
 
 $message = '';
 
-// --- Lógica para C, U, D ---
-
-// Crear/Actualizar Producto
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add_producto'])) {
         $proveedor_id = $_POST['proveedor_id'];
@@ -30,7 +26,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $producto_id = $stmt->insert_id;
             $stmt->close();
 
-            // Insertar relaciones con categorías
             if (!empty($categorias_seleccionadas)) {
                 $stmt_cat = $conn->prepare("INSERT INTO productos_categorias (producto_id, categoria_id) VALUES (?, ?)");
                 foreach ($categorias_seleccionadas as $categoria_id) {
@@ -48,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         } catch (Exception $e) {
             $conn->rollback();
-            if ($conn->errno == 1062) { // Error de SKU duplicado
+            if ($conn->errno == 1062) { 
                 $message = "<p class='error'>Error al agregar producto: El SKU ya existe.</p>";
             } else {
                 $message = "<p class='error'>" . $e->getMessage() . "</p>";
@@ -73,8 +68,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $stmt->close();
 
-            // Actualizar relaciones con categorías
-            // 1. Eliminar relaciones existentes para este producto
             $stmt_delete_cat = $conn->prepare("DELETE FROM productos_categorias WHERE producto_id = ?");
             $stmt_delete_cat->bind_param("i", $producto_id);
             if (!$stmt_delete_cat->execute()) {
@@ -82,7 +75,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $stmt_delete_cat->close();
 
-            // 2. Insertar nuevas relaciones
             if (!empty($categorias_seleccionadas)) {
                 $stmt_cat = $conn->prepare("INSERT INTO productos_categorias (producto_id, categoria_id) VALUES (?, ?)");
                 foreach ($categorias_seleccionadas as $categoria_id) {
@@ -98,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = "<p class='success'>Producto actualizado exitosamente.</p>";
         } catch (Exception $e) {
             $conn->rollback();
-            if ($conn->errno == 1062) { // Error de SKU duplicado
+            if ($conn->errno == 1062) { 
                 $message = "<p class='error'>Error al actualizar producto: El SKU ya existe.</p>";
             } else {
                 $message = "<p class='error'>" . $e->getMessage() . "</p>";
@@ -107,7 +99,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Eliminar Producto
 if (isset($_GET['delete_producto'])) {
     $producto_id = $_GET['delete_producto'];
     $stmt = $conn->prepare("DELETE FROM productos WHERE producto_id = ?");
@@ -120,7 +111,6 @@ if (isset($_GET['delete_producto'])) {
     $stmt->close();
 }
 
-// --- Obtener datos para el formulario de edición ---
 $edit_producto = null;
 $producto_categorias_existentes = [];
 if (isset($_GET['edit_producto'])) {
@@ -132,7 +122,6 @@ if (isset($_GET['edit_producto'])) {
     $edit_producto = $result->fetch_assoc();
     $stmt->close();
 
-    // Obtener las categorías asociadas al producto para preseleccionar
     $stmt_cats = $conn->prepare("SELECT categoria_id FROM productos_categorias WHERE producto_id = ?");
     $stmt_cats->bind_param("i", $producto_id);
     $stmt_cats->execute();
@@ -143,7 +132,6 @@ if (isset($_GET['edit_producto'])) {
     $stmt_cats->close();
 }
 
-// --- Obtener proveedores para el select ---
 $proveedores_result = $conn->query("SELECT proveedor_id, nombre_empresa FROM proveedores ORDER BY nombre_empresa");
 $proveedores = [];
 if ($proveedores_result->num_rows > 0) {
@@ -152,7 +140,6 @@ if ($proveedores_result->num_rows > 0) {
     }
 }
 
-// --- Obtener todas las categorías para el checklist ---
 $categorias_result = $conn->query("SELECT categoria_id, nombre FROM categorias ORDER BY nombre");
 $categorias = [];
 if ($categorias_result->num_rows > 0) {
@@ -162,7 +149,6 @@ if ($categorias_result->num_rows > 0) {
 }
 
 
-// --- Leer Productos (con proveedor y categorías) ---
 $sql = "SELECT
             p.producto_id, p.nombre, p.descripcion, p.precio, p.stock, p.sku,
             prov.nombre_empresa AS nombre_proveedor,

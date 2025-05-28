@@ -1,4 +1,4 @@
-/* css/style.css */
+
 body {
     font-family: Arial, sans-serif;
     margin: 20px;
@@ -81,12 +81,12 @@ form label {
 
 form input[type="text"],
 form select {
-    width: calc(100% - 22px); /* Ajuste para el padding y el border */
+    width: calc(100% - 22px); 
     padding: 10px;
     margin-bottom: 15px;
     border: 1px solid #ccc;
     border-radius: 4px;
-    box-sizing: border-box; /* Incluye padding y border en el ancho */
+    box-sizing: border-box; 
 }
 
 form button {

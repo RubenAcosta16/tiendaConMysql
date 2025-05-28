@@ -1,5 +1,4 @@
 <?php
-// clientes_direcciones.php
 require_once 'db.php';
 require_once 'protected_route.php';
 
@@ -11,7 +10,6 @@ $cliente_id = null;
 if (isset($_GET['cliente_id'])) {
     $cliente_id = (int)$_GET['cliente_id'];
 
-    // Obtener información del cliente
     $stmt_cliente_info = $conn->prepare("
         SELECT c.cliente_id, dp.nombre, dp.apellido_paterno, dp.apellido_materno
         FROM clientes c
@@ -26,21 +24,18 @@ if (isset($_GET['cliente_id'])) {
 
     if (!$cliente_info) {
         $message = "<p class='error'>Cliente no encontrado.</p>";
-        $cliente_id = null; // Reinicia cliente_id si no se encuentra
+        $cliente_id = null; 
     }
 } else {
     $message = "<p class='error'>ID de cliente no proporcionado.</p>";
 }
 
-// --- Lógica para C, U, D de clientes_direcciones ---
 
-// Asociar Dirección a Cliente
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_cliente_direccion'])) {
     $cliente_id_form = $_POST['cliente_id'];
     $direccion_id = $_POST['direccion_id'];
     $es_principal = isset($_POST['es_principal']) ? 1 : 0;
 
-    // Si se marca como principal, desmarcar cualquier otra principal para este cliente
     if ($es_principal) {
         $stmt_unset_principal = $conn->prepare("UPDATE clientes_direcciones SET es_principal = 0 WHERE cliente_id = ? AND es_principal = 1");
         $stmt_unset_principal->bind_param("i", $cliente_id_form);
@@ -48,7 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_cliente_direccion
         $stmt_unset_principal->close();
     }
 
-    // Insertar la nueva asociación
     $stmt = $conn->prepare("INSERT INTO clientes_direcciones (cliente_id, direccion_id, es_principal) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE es_principal = ?");
     $stmt->bind_param("iiii", $cliente_id_form, $direccion_id, $es_principal, $es_principal);
     if ($stmt->execute()) {
@@ -59,10 +53,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_cliente_direccion
     $stmt->close();
 }
 
-// Desvincular Dirección de Cliente
 if (isset($_GET['delete_cliente_direccion'])) {
     $direccion_id_to_delete = $_GET['delete_cliente_direccion'];
-    $cliente_id_for_delete = $_GET['cliente_id']; // Asegúrate de tener el cliente_id aquí
+    $cliente_id_for_delete = $_GET['cliente_id']; 
 
     $stmt = $conn->prepare("DELETE FROM clientes_direcciones WHERE cliente_id = ? AND direccion_id = ?");
     $stmt->bind_param("ii", $cliente_id_for_delete, $direccion_id_to_delete);
@@ -74,18 +67,15 @@ if (isset($_GET['delete_cliente_direccion'])) {
     $stmt->close();
 }
 
-// Marcar como Principal
 if (isset($_GET['set_principal'])) {
     $direccion_id_to_set_principal = $_GET['set_principal'];
     $cliente_id_for_set_principal = $_GET['cliente_id'];
 
-    // Desmarcar todas las principales para este cliente
     $stmt_unset = $conn->prepare("UPDATE clientes_direcciones SET es_principal = 0 WHERE cliente_id = ?");
     $stmt_unset->bind_param("i", $cliente_id_for_set_principal);
     $stmt_unset->execute();
     $stmt_unset->close();
 
-    // Marcar la dirección seleccionada como principal
     $stmt_set = $conn->prepare("UPDATE clientes_direcciones SET es_principal = 1 WHERE cliente_id = ? AND direccion_id = ?");
     $stmt_set->bind_param("ii", $cliente_id_for_set_principal, $direccion_id_to_set_principal);
     if ($stmt_set->execute()) {
@@ -97,7 +87,6 @@ if (isset($_GET['set_principal'])) {
 }
 
 
-// --- Obtener direcciones no asociadas al cliente ---
 $direcciones_disponibles = [];
 if ($cliente_id) {
     $sql_available_dirs = "SELECT d.direccion_id, d.calle, d.numero_exterior, d.colonia
@@ -114,7 +103,6 @@ if ($cliente_id) {
 }
 
 
-// --- Leer Direcciones Asociadas al Cliente ---
 $direcciones_asociadas = [];
 if ($cliente_id) {
     $sql_associated_dirs = "SELECT

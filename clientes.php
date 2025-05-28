@@ -1,5 +1,4 @@
 <?php
-// clientes.php
 require_once 'db.php';
 require_once 'protected_route.php';
 
@@ -7,9 +6,6 @@ $conn = connectDB();
 
 $message = '';
 
-// --- Lógica para C, U, D ---
-
-// Crear Cliente (usando el procedimiento almacenado)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_cliente'])) {
     $nombre = $_POST['nombre'];
     $apellido_paterno = $_POST['apellido_paterno'];
@@ -18,20 +14,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_cliente'])) {
     $fecha_nacimiento = $_POST['fecha_nacimiento'];
     $telefono = $_POST['telefono'];
 
-    // Llama al procedimiento almacenado
-    // Nota: MySQLi no tiene un método directo para variables de salida.
-    // Usamos una consulta para obtener el valor después de la llamada.
     $stmt = $conn->prepare("CALL sp_crear_cliente(?, ?, ?, ?, ?, ?, @new_client_id)");
     $stmt->bind_param("ssssss", $nombre, $apellido_paterno, $apellido_materno, $email, $fecha_nacimiento, $telefono);
 
     if ($stmt->execute()) {
-        // Obtener el ID del cliente recién creado
         $result = $conn->query("SELECT @new_client_id as cliente_id");
         $row = $result->fetch_assoc();
         $new_client_id = $row['cliente_id'];
         $message = "<p class='success'>Cliente agregado exitosamente. ID de Cliente: " . $new_client_id . "</p>";
     } else {
-        // Manejo de error para email duplicado u otros del SP
         $error_message = $conn->error;
         if (strpos($error_message, 'Duplicate entry') !== false && strpos($error_message, 'for key \'email\'') !== false) {
             $message = "<p class='error'>Error al agregar cliente: El email ya está registrado.</p>";
@@ -40,7 +31,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_cliente'])) {
         }
     }
     $stmt->close();
-    // Limpiar resultados de la llamada al SP si es necesario para futuras consultas
     while ($conn->more_results() && $conn->next_result()) {
         if ($res = $conn->store_result()) {
             $res->free();
@@ -48,7 +38,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_cliente'])) {
     }
 }
 
-// Actualizar Cliente y Datos de Persona
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cliente'])) {
     $cliente_id = $_POST['cliente_id'];
     $datos_personas_id = $_POST['datos_personas_id'];
@@ -59,14 +48,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cliente'])) {
     $fecha_nacimiento = $_POST['fecha_nacimiento'];
     $telefono = $_POST['telefono'];
 
-    // Primero, actualizar datos_personas
     $stmt_persona = $conn->prepare("UPDATE datos_personas SET nombre = ?, apellido_paterno = ?, apellido_materno = ?, email = ?, fecha_nacimiento = ?, telefono = ? WHERE datos_personas_id = ?");
     $stmt_persona->bind_param("ssssssi", $nombre, $apellido_paterno, $apellido_materno, $email, $fecha_nacimiento, $telefono, $datos_personas_id);
 
     if ($stmt_persona->execute()) {
         $message = "<p class='success'>Cliente y datos de persona actualizados exitosamente.</p>";
     } else {
-        if ($conn->errno == 1062) { // Error de duplicado de email
+        if ($conn->errno == 1062) {
             $message = "<p class='error'>Error al actualizar cliente: El email ya existe para otra persona.</p>";
         } else {
             $message = "<p class='error'>Error al actualizar cliente: " . $stmt_persona->error . "</p>";
@@ -75,11 +63,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cliente'])) {
     $stmt_persona->close();
 }
 
-// Eliminar Cliente
 if (isset($_GET['delete_cliente'])) {
     $cliente_id = $_GET['delete_cliente'];
 
-    // Obtener el datos_personas_id asociado para eliminar la persona también (debido a ON DELETE CASCADE)
     $stmt_get_persona_id = $conn->prepare("SELECT datos_personas_id FROM clientes WHERE cliente_id = ?");
     $stmt_get_persona_id->bind_param("i", $cliente_id);
     $stmt_get_persona_id->execute();
@@ -88,8 +74,6 @@ if (isset($_GET['delete_cliente'])) {
     $datos_personas_id_to_delete = $row_persona_id['datos_personas_id'];
     $stmt_get_persona_id->close();
 
-    // Eliminar el cliente (ON DELETE CASCADE en la FK de clientes_direcciones y datos_personas_id en clientes
-    // se encargará de eliminar las entradas relacionadas en clientes_direcciones y datos_personas)
     $stmt = $conn->prepare("DELETE FROM clientes WHERE cliente_id = ?");
     $stmt->bind_param("i", $cliente_id);
     if ($stmt->execute()) {
@@ -101,7 +85,6 @@ if (isset($_GET['delete_cliente'])) {
 }
 
 
-// --- Obtener datos para el formulario de edición ---
 $edit_cliente = null;
 if (isset($_GET['edit_cliente'])) {
     $cliente_id = $_GET['edit_cliente'];
@@ -118,7 +101,6 @@ if (isset($_GET['edit_cliente'])) {
     $stmt->close();
 }
 
-// --- Leer Clientes (con datos de persona y direcciones asociadas) ---
 $sql = "SELECT
             c.cliente_id,
             dp.nombre,

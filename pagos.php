@@ -1,5 +1,4 @@
 <?php
-// pagos.php
 require_once 'db.php';
 require_once 'protected_route.php';
 
@@ -7,9 +6,7 @@ $conn = connectDB();
 
 $message = '';
 
-// --- Lógica para C, U, D ---
 
-// Crear Pago (manual, para casos excepcionales o pagos iniciales de órdenes pendientes)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add_pago'])) {
         $orden_id = $_POST['orden_id'];
@@ -36,7 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $estado = $_POST['estado'];
     $referencia_pago = $_POST['referencia_pago'];
 
-    // PREPARA LA SENTENCIA ANTES DEL BIND
     $stmt = $conn->prepare("UPDATE pagos SET orden_id = ?, metodo_pago = ?, monto = ?, estado = ?, referencia_pago = ? WHERE pago_id = ?");
     $stmt->bind_param("isdssi", $orden_id, $metodo_pago, $monto, $estado, $referencia_pago, $pago_id);
     if ($stmt->execute()) {
@@ -48,7 +44,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 }
 
-// Eliminar Pago
 if (isset($_GET['delete_pago'])) {
     $pago_id = $_GET['delete_pago'];
     $stmt = $conn->prepare("DELETE FROM pagos WHERE pago_id = ?");
@@ -61,7 +56,6 @@ if (isset($_GET['delete_pago'])) {
     $stmt->close();
 }
 
-// --- Obtener datos para el formulario de edición ---
 $edit_pago = null;
 if (isset($_GET['edit_pago'])) {
     $pago_id = $_GET['edit_pago'];
@@ -73,13 +67,11 @@ if (isset($_GET['edit_pago'])) {
     $stmt->close();
 }
 
-// --- Obtener órdenes para el select (solo órdenes con el total conocido) ---
 $ordenes_result = $conn->query("SELECT orden_id, total, fecha_orden FROM ordenes_compra ORDER BY fecha_orden DESC");
 $ordenes = [];
 while ($row = $ordenes_result->fetch_assoc()) { $ordenes[] = $row; }
 
 
-// --- Leer Pagos (con información de la orden) ---
 $sql_pagos = "SELECT
                 p.*,
                 oc.fecha_orden,
