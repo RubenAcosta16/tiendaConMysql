@@ -1,0 +1,50 @@
+recuerda después de importar en repricar todas las base de datos pone en ignorar
+
+
+también lo del my.ini, se ve en el panel del XAMPP, en el botón de config, y te vas
+
+descomentar esto:
+log-bin=mysql-bin
+
+eso se ve en replicas/ mostrar el estado del principal
+binlog_do_db=tienda
+
+
+id único por maquina
+server-id	=1
+
+
+
+
+
+
+maestro esclavo, el ip sustituir por el de la otra maquina
+
+
+-- Primero crear el usuario
+CREATE USER 'esclavo3aynose'@'10.235.79.229' IDENTIFIED BY 'qwe123';
+
+-- Luego otorgar permisos
+GRANT REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'esclavo3aynose'@'10.235.79.229';
+
+
+
+
+
+
+para maestrear
+las opciones 000005, y el 775 es position las puedes ver en replicas/ mostrar el estado del principal
+
+CHANGE MASTER TO MASTER_HOST='10.235.79.229', 
+MASTER_USER='esclavo2aynose', 
+MASTER_PASSWORD='qwe123', 
+MASTER_LOG_FILE='mysql-bin.000001', 
+MASTER_LOG_POS=328;
+
+
+eso justo después de ejecutar lo de arriba
+start slave;
+
+
+
+11:22 me quede de que importar la db que tengo en esa memoria

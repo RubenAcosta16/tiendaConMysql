@@ -1,0 +1,39 @@
+cd C:\xampp\mysql\bin
+
+mysqldump -u root --password= tienda > C:\Users\1511r\Documents\dumps\tienda_%Date:~6.4%%Date:~3.2%%Date:~0.2%_.sql
+
+
+
+luego abrir programador de tareas
+
+
+
+
+
+
+-------------------------------------------------------------------------------
+respaldo automatico: https://www.youtube.com/watch?v=PSWBvNnjPSI&t=1s
+
+
+hacer respaldo manual: https://www.youtube.com/watch?v=6kPIiY4La8Q
+
+
+db distribuida: https://www.youtube.com/watch?v=kElw2eKJdd8
+
+
+
+
+
+
+
+
+
+
+
+set year=%date:~6,4%
+set month=%date:~3,2%
+set day=%date:~0,2%
+
+set name=pos_%year%%month%%day%.sql
+
+mysqldump -u root -pqwe123 tienda > C:\Users\1511r\Documents\dumps\%name%
